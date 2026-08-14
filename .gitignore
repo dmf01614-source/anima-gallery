@@ -5,6 +5,7 @@ __pycache__/
 # 本地数据（体积大，不纳入版本控制）
 data/
 cache/
+.version
 
 # 本地满血索引（139MB 超 GitHub 100MB 限制，用 build-full-index.mjs 自行生成）
 site/index-full.json

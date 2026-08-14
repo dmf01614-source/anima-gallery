@@ -13,6 +13,18 @@
 
 **在线完整版**：https://anima-gallery.pages.dev —— Cloudflare 免费部署，带作品预览图（仅 Gelbooru 数据源），需在设置里填自己的 Gelbooru API Key。
 
+## 🔄 检查更新（重要）
+
+数据会持续更新（画师标签、索引、别名）。双击运行 **`update-check.py`**：
+
+- 自动探测可用代理（Clash/Geph 等常见端口，谁通用谁）
+- 对比 GitHub 最新版本，有更新会提示并询问是否下载（约 140MB 数据）
+- 首次运行只记录基线；之后每次运行都会检查
+
+```bash
+python update-check.py
+```
+
 ## 快速开始（本地运行）
 
 1. **装好 Python 3.10+**（[python.org](https://www.python.org/downloads/)）
