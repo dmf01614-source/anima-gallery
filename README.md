@@ -9,6 +9,13 @@
 - ⭐ 收藏 / 多选 / 灯箱缩放 / 9 种排序
 - 🔞 成人内容开关（网页版）
 
+## 🌐 在线体验（无需安装）
+
+| 版本 | 网址 | 说明 |
+|---|---|---|
+| **在线完整版** | https://anima-gallery.pages.dev | Cloudflare 免费部署，**带作品预览图**（仅 Gelbooru 数据源），需在设置里填自己的 Gelbooru API Key |
+| 精简备份版 | https://dmf01614-source.github.io/anima-artist-gallery/ | GitHub Pages 部署，可搜索/复制/跳转，**无预览图**（纯静态无法代理图片） |
+
 ## 快速开始（本地运行）
 
 1. **装好 Python 3.10+**（[python.org](https://www.python.org/downloads/)）
@@ -46,12 +53,16 @@ wrangler pages deploy . --project-name anima-gallery      # 部署前端 + Funct
 ├── server.py            # 本地画廊服务器（图片/API 代理 + 磁盘缓存 + 多端口提速）
 ├── start.bat            # 一键启动
 ├── site/                # 前端（纯 HTML/CSS/JS，无框架）
-├── fetch-*.mjs          # 数据抓取脚本（Gelbooru/Danbooru，需填自己的 key）
+│   ├── index.html / app.js / style.css
+│   ├── artists-data.json   # 59,676 位画师数据
+│   └── index-*.json        # 标签索引分片（28 个，搜索/标签反查用）
+├── fetch-gelbooru.mjs   # Gelbooru 数据抓取脚本（需填自己的 key）
+├── fetch-danbooru.mjs   # Danbooru 数据抓取脚本（需填自己的 key）
 ├── merge-index.mjs      # 合并抓取数据 → 标签索引
 ├── parse-artists.mjs    # 画师名单解析（Anima 调用 id + 别名映射）
-├── split-index.mjs      # 标签索引分片（在线部署用，单文件 25MB 限制）
+├── split-index.mjs      # 标签索引分片（在线部署用）
 ├── artists.txt          # Anima 画师名单（59,676 位）
-└── artists.json         # 解析后的画师数据（a=调用id, d=显示名, b=booru标签, m=别名）
+└── alias-map*.json      # 别名映射（Danbooru 别名检测结果）
 ```
 
 ## 数据说明
