@@ -205,6 +205,13 @@ body.online #danbooru-fields { display: none; }
 .adult-toggle input { accent-color: var(--accent); cursor: pointer; }
 body:not(.online) .adult-toggle { display: none; }
 
+/* 版本差别说明：仅网页版显示 */
+.version-note { margin-top: 14px; padding: 10px 12px; background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.1); border-radius: 8px; font-size: 12.5px; line-height: 1.7; color: var(--muted); }
+.version-note b { color: var(--text); }
+.version-note ul { margin: 6px 0 0; padding-left: 18px; }
+.version-note a { color: var(--accent); }
+body:not(.online) .version-note { display: none; }
+
 /* ===== Toast ===== */
 .toast {
   position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
