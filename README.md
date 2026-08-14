@@ -55,7 +55,8 @@ wrangler pages deploy . --project-name anima-gallery      # 部署前端 + Funct
 │   └── index-*.json        # 标签索引分片（28 个，搜索/标签反查用）
 ├── fetch-gelbooru.mjs   # Gelbooru 数据抓取脚本（需填自己的 key）
 ├── fetch-danbooru.mjs   # Danbooru 数据抓取脚本（需填自己的 key）
-├── merge-index.mjs      # 合并抓取数据 → 标签索引
+├── merge-index.mjs      # 合并抓取数据 → 标签索引（在线分片版）
+├── build-full-index.mjs # 构建本地满血索引（139MB 单文件，本地加载，标签反查覆盖最全）
 ├── parse-artists.mjs    # 画师名单解析（Anima 调用 id + 别名映射）
 ├── split-index.mjs      # 标签索引分片（在线部署用）
 ├── artists.txt          # Anima 画师名单（59,676 位）

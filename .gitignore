@@ -6,6 +6,9 @@ __pycache__/
 data/
 cache/
 
+# 本地满血索引（139MB 超 GitHub 100MB 限制，用 build-full-index.mjs 自行生成）
+site/index-full.json
+
 # 部署与本地配置
 deploy-cf/
 .wrangler/

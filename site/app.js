@@ -88,6 +88,19 @@ function getApiCred() {
 // Cloudflare Pages 单文件限 25MB，拆分后每个 ~1MB，还能并行加载提速
 const INDEX_CHUNKS = [...'abcdefghijklmnopqrstuvwxyz', '0', 'other'];
 async function loadIndex() {
+  if (IS_LOCAL) {
+    // 本地满血版：加载全量单文件索引（无 25MB 限制，139MB，标签反查覆盖远超在线版）
+    try {
+      const r = await fetch('index-full.json');
+      return await r.json();
+    } catch (e) {
+      // 兜底：满血文件缺失时退回分片版
+      return loadIndexChunks();
+    }
+  }
+  return loadIndexChunks();
+}
+async function loadIndexChunks() {
   const chunks = await Promise.all(INDEX_CHUNKS.map(c =>
     fetch(`index-${c}.json`).then(r => r.json()).catch(() => ({}))
   ));
