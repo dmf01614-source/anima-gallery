@@ -1,0 +1,18 @@
+# 依赖与构建产物
+node_modules/
+__pycache__/
+
+# 本地数据（体积大，不纳入版本控制）
+data/
+cache/
+
+# 部署与本地配置
+deploy-cf/
+.wrangler/
+.hermes/
+config.json
+
+# 日志与系统文件
+*.log
+.DS_Store
+Thumbs.db
