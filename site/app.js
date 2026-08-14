@@ -512,7 +512,7 @@ els.settingsSave.addEventListener('click', () => {
   state.settings = {
     dbLogin: $('set-danbooru-login').value.trim(),
     dbKey: $('set-danbooru-key').value.trim(),
-    gbKey: $('set-gelbooru-key').value.trim(),
+    gbKey: cleanGelbooruKey($('set-gelbooru-key').value),
     gbUid: $('set-gelbooru-uid').value.trim(),
   };
   localStorage.setItem('settings', JSON.stringify(state.settings));
@@ -571,6 +571,15 @@ els.adultToggle.addEventListener('change', () => {
   render();
 });
 
+// 防痴呆：用户可能从 URL 复制 key（带 &api_key= 前缀），自动清洗成纯 key
+function cleanGelbooruKey(s) {
+  if (!s) return '';
+  return String(s).trim()
+    .replace(/^.*?api_key=/i, '')   // 去掉 &api_key= 等前缀
+    .replace(/[&?#].*$/, '');       // 去掉后面的 &user_id= 等尾巴
+}
+const isHex = s => /^[0-9a-fA-F]+$/.test(s);
+
 async function testApi(source) {
   const resultEl = source === 'danbooru' ? els.testDanbooruResult : els.testGelbooruResult;
   resultEl.textContent = '测试中…';
@@ -578,11 +587,29 @@ async function testApi(source) {
   try {
     // 直接读输入框当前值（不用先点保存）：填完 key 就能立即测试
     const s = {
-      gbKey: $('set-gelbooru-key').value.trim(),
+      gbKey: cleanGelbooruKey($('set-gelbooru-key').value),
       gbUid: $('set-gelbooru-uid').value.trim(),
       dbLogin: $('set-danbooru-login').value.trim(),
       dbKey: $('set-danbooru-key').value.trim(),
     };
+    // 防痴呆校验：格式不对直接提示，不用等 Gelbooru 401
+    if (source === 'gelbooru') {
+      if (!s.gbKey || !s.gbUid) {
+        resultEl.textContent = '❌ 请填写 Gelbooru API Key 和 User ID';
+        resultEl.style.color = '#f87171';
+        return;
+      }
+      if (!/^\d+$/.test(s.gbUid)) {
+        resultEl.textContent = '❌ User ID 应该是纯数字';
+        resultEl.style.color = '#f87171';
+        return;
+      }
+      if (!isHex(s.gbKey) || s.gbKey.length < 64) {
+        resultEl.textContent = '❌ Key 像是从 URL 复制的（已自动清理）或复制不完整——请去 Gelbooru 账号 Options 页复制完整 64 位 key';
+        resultEl.style.color = '#f87171';
+        return;
+      }
+    }
     const params = new URLSearchParams({ booru: 'ask_(askzy)', limit: 1, source });
     if (s.gbKey) params.set('gb_key', s.gbKey);
     if (s.gbUid) params.set('gb_uid', s.gbUid);
