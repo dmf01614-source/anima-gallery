@@ -11,10 +11,7 @@
 
 ## 🌐 在线体验（无需安装）
 
-| 版本 | 网址 | 说明 |
-|---|---|---|
-| **在线完整版** | https://anima-gallery.pages.dev | Cloudflare 免费部署，**带作品预览图**（仅 Gelbooru 数据源），需在设置里填自己的 Gelbooru API Key |
-| 精简备份版 | https://dmf01614-source.github.io/anima-artist-gallery/ | GitHub Pages 部署，可搜索/复制/跳转，**无预览图**（纯静态无法代理图片） |
+**在线完整版**：https://anima-gallery.pages.dev —— Cloudflare 免费部署，带作品预览图（仅 Gelbooru 数据源），需在设置里填自己的 Gelbooru API Key。
 
 ## 快速开始（本地运行）
 
