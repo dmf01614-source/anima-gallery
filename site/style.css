@@ -231,3 +231,6 @@ body:not(.online) .version-note { display: none; }
   .gallery { grid-template-columns: 1fr; }
   .top-controls { width: 100%; justify-content: flex-start; }
 }
+
+/* 状态栏可点击提示（画师模式下有标签结果时） */
+.statusbar.clickable { cursor: pointer; color: var(--accent); text-decoration: underline dotted; }

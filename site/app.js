@@ -202,7 +202,21 @@ function render() {
   else if (s === 'random') list = list.slice().sort(() => Math.random() - 0.5); // 🎲 随机：每次乱序
 
   state.results = list;
-  setStatus(`显示 ${list.length.toLocaleString()} 位画师`);
+  // 状态栏智能提示：画师模式下若标签也有结果，提示可点击切换
+  let statusMsg = `显示 ${list.length.toLocaleString()} 位画师`;
+  if (state.searchMode === 'artist' && els.search.value.trim()) {
+    const tagName = resolveTag(els.search.value);
+    const tagArr = state.index[tagName];
+    if (tagArr && tagArr.length > 0 && tagArr.length !== list.length) {
+      statusMsg += ` · 标签「${tagName}」有 ${tagArr.length.toLocaleString()} 位画师，点此切换`;
+      els.statusbar.classList.add('clickable');
+    } else {
+      els.statusbar.classList.remove('clickable');
+    }
+  } else {
+    els.statusbar.classList.remove('clickable');
+  }
+  setStatus(statusMsg);
   renderGallery(list);
 }
 
@@ -575,6 +589,17 @@ document.addEventListener('click', e => { if (!e.target.closest('.search-box')) 
 
 // ========== 控件事件 ==========
 els.mode.addEventListener('change', () => { state.searchMode = els.mode.value; render(); });
+  // 状态栏点击：画师模式下有标签结果时切换到标签反查
+  els.statusbar.addEventListener('click', () => {
+    if (state.searchMode === 'artist' && els.search.value.trim()) {
+      const tagName = resolveTag(els.search.value);
+      if (state.index[tagName] && state.index[tagName].length > 0) {
+        els.mode.value = 'tag';
+        state.searchMode = 'tag';
+        render();
+      }
+    }
+  });
 els.source.addEventListener('change', () => { state.source = els.source.value; postsCache.clear(); render(); });
 els.sort.addEventListener('change', () => { state.sort = els.sort.value; render(); });
 els.loadMore.addEventListener('click', () => renderMore());
