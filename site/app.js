@@ -189,14 +189,16 @@ function render() {
   // 傻瓜式说明：每个分类都有「正序」(从小到大) 和「倒序」(从大到小)，随机除外
   // sort 值 = 分类 + 方向：如 'hot-desc' = 热度从高到低，'count-asc' = 作品数从少到多
   const s = state.sort;
-  if (s === 'hot-desc') list.sort((a, b) => (b.h || 0) - (a.h || 0));          // 🔥 热度：高 → 低
+  // 数量排序：标签模式下按「该标签下的作品数」（tagCountMap），画师模式下按画师总作品数（n）——与卡片显示一致
+  const cntOf = a => (state.resultMode === 'tag' ? (state.tagCountMap[a.b] || 0) : (a.n || 0));
+  if (s === 'hot-desc') list.sort((a, b) => (b.h || 0) - (a.h || 0));          // 🔥 热度：高 → 低（画师总热度，无标签级数据）
   else if (s === 'hot-asc') list.sort((a, b) => (a.h || 0) - (b.h || 0));       // 🔥 热度：低 → 高
-  else if (s === 'count-desc') list.sort((a, b) => (b.n || 0) - (a.n || 0));    // 📊 作品数：多 → 少
-  else if (s === 'count-asc') list.sort((a, b) => (a.n || 0) - (b.n || 0));     // 📊 作品数：少 → 多
-  else if (s === 'tags-desc') list.sort((a, b) => (b.t || 0) - (a.t || 0));     // 🏷️ 标签数：多 → 少
+  else if (s === 'count-desc') list.sort((a, b) => cntOf(b) - cntOf(a));        // 📊 作品数：多 → 少（标签模式下=该标签作品数）
+  else if (s === 'count-asc') list.sort((a, b) => cntOf(a) - cntOf(b));         // 📊 作品数：少 → 多
+  else if (s === 'tags-desc') list.sort((a, b) => (b.t || 0) - (a.t || 0));     // 🏷️ 标签数：多 → 少（画师级数据）
   else if (s === 'tags-asc') list.sort((a, b) => (a.t || 0) - (b.t || 0));      // 🏷️ 标签数：少 → 多
   else if (s === 'name-asc') list.sort((a, b) => (a.m || a.d).localeCompare(b.m || b.d));       // 🔤 名字：A → Z
-  else if (s === 'name-desc') list.sort((a, b) => (b.m || a.d).localeCompare(a.m || a.d));      // 🔤 名字：Z → A
+  else if (s === 'name-desc') list.sort((a, b) => (b.m || b.d).localeCompare(a.m || a.d));      // 🔤 名字：Z → A
   else if (s === 'random') list = list.slice().sort(() => Math.random() - 0.5); // 🎲 随机：每次乱序
 
   state.results = list;
