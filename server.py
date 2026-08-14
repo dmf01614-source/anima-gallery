@@ -5,6 +5,7 @@ import os
 import sys
 import json
 import hashlib
+import re
 import time as _time
 import webbrowser
 import threading
@@ -28,9 +29,13 @@ CACHE_DIR = os.path.join(BASE_DIR, 'cache', 'media')
 # 重要：不再内置任何 API key！每个用户用自己的 key（前端设置面板填写，存在本机）
 DEFAULTS = {
     'port': 8765,
-    # Geph(9910) 优先——Gelbooru 走 Geph 不限流；Clash(7897) 和直连作为备选
-    'proxies': ['http://127.0.0.1:9910', 'http://127.0.0.1:7897', None],
+    # 代理自动识别：不写死某个端口——启动时探测常见代理端口（Clash/Geph/V2Ray 等），谁通用谁
+    # config.json 里写 "proxies": [...] 可手动指定（优先于自动探测）
+    'proxies': ['auto'],
 }
+
+# 常见代理端口（按出现概率排序）：Clash/Clash Verge 7897、Geph 9910、Clash 7890、V2Ray 10809/1080、sing-box 2080、其他 8888
+COMMON_PORTS = [7897, 9910, 7890, 10809, 1080, 2080, 8888]
 
 def load_config():
     cfg = dict(DEFAULTS)
@@ -44,7 +49,35 @@ def load_config():
 
 CONFIG = load_config()
 PORT = int(CONFIG['port'])
-PROXIES = list(CONFIG['proxies'])
+
+def _test_proxy(proxy):
+    """测试代理能否连通 Danbooru（curl_cffi 伪装 Chrome，探测用轻量请求）"""
+    try:
+        r = cffi_requests.get('https://danbooru.donmai.us/tags.json',
+                              params={'search[name]': 'corruption'},
+                              proxies={'http': proxy, 'https': proxy},
+                              impersonate='chrome', timeout=6)
+        return r.status_code == 200
+    except Exception:
+        return False
+
+def detect_proxies():
+    """自动识别可用代理：config.json 手动指定优先；否则探测常见端口；探测不到则直连"""
+    if CONFIG.get('proxies') and CONFIG['proxies'] != DEFAULTS['proxies'] and CONFIG['proxies'] != ['auto']:
+        print(f'使用 config.json 指定的代理: {CONFIG["proxies"]}')
+        return list(CONFIG['proxies'])
+    available = []
+    for port in COMMON_PORTS:
+        p = f'http://127.0.0.1:{port}'
+        if _test_proxy(p):
+            print(f'自动识别到可用代理: {p}')
+            available.append(p)
+    if not available:
+        print('未探测到可用代理，将使用直连（若被墙请配置 config.json 的 proxies）')
+        return [None]
+    return available + [None]  # 探测到的代理优先，直连兜底
+
+PROXIES = detect_proxies()
 
 UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0 Safari/537.36'
 
@@ -97,8 +130,8 @@ def fetch_url(url, referer, accept):
 def fetch_danbooru(url):
     """Danbooru 专用：curl_cffi 伪装 Chrome TLS 指纹，过 Cloudflare challenge
     注意：不显式传 headers，否则覆盖 impersonate 的指纹 → 403
-    Danbooru 走 Geph(9910) + curl_cffi——实测 9910 出口 curl_cffi 伪装 Chrome 能过 Cloudflare"""
-    danbooru_proxies = ['http://127.0.0.1:9910', 'http://127.0.0.1:7897', None]
+    代理：自动识别（detect_proxies 探测结果，config.json 可手动指定）——谁通用谁，不写死端口"""
+    danbooru_proxies = PROXIES
     last_err = None
     for proxy in danbooru_proxies:
         for attempt in range(2):  # 每个代理试 2 次：Cloudflare 偶尔拦，重试通常能过
@@ -160,6 +193,10 @@ def fetch_posts(booru, limit, source, gb_key='', gb_uid='', db_login='', db_key=
     if source == 'gelbooru':
         if not gb_key or not gb_uid:
             raise Exception('请先在设置 ⚙ 中填写你自己的 Gelbooru API Key 和 User ID')
+        # 防痴呆双保险：剥离用户可能从 URL 复制的 api_key= 前缀
+        gb_key = re.sub(r'^.*?api_key=', '', gb_key.strip(), flags=re.I)
+        gb_key = re.sub(r'[&?#].*$', '', gb_key)
+        gb_uid = gb_uid.strip()
         url = (f'https://gelbooru.com/index.php?page=dapi&s=post&q=index&json=1'
                f'&api_key={urllib.parse.quote(gb_key)}&user_id={urllib.parse.quote(gb_uid)}'
                f'&tags={urllib.parse.quote(booru)}&limit={limit}')
