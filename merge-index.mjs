@@ -69,6 +69,37 @@ console.log('Gelbooru 聚合完成');
 // 增量数据（每画师 1001-5000 张）追加聚合
 await processJsonl('data/gelbooru-more.jsonl', aggregateGelbooru);
 console.log('Gelbooru 增量聚合完成');
+// 补抓数据（标签缺失画师的标签补全，2026-08 修复）
+await processJsonl('data/refetch-gelbooru.jsonl', aggregateGelbooru);
+console.log('Gelbooru 补抓聚合完成');
+await processJsonl('data/refetch-danbooru.jsonl', (r) => {
+  const m = meta.get(r.artist) || { post_count: 0, hot: 0 };
+  m.post_count = Math.max(m.post_count, r.post_count || 0);
+  m.hot += r.fav_total || 0;
+  meta.set(r.artist, m);
+  const tags = mergedTags.get(r.artist) || {};
+  for (const [tag, count] of Object.entries(r.tags || {})) {
+    if (count < MIN_COUNT) continue;
+    if (!isValidTag(tag)) continue;
+    tags[tag] = Math.max(tags[tag] || 0, count);
+  }
+  mergedTags.set(r.artist, tags);
+});
+console.log('Danbooru 补抓聚合完成');
+// 第三轮补抓（两站无标签的 973 个画师，按名单 booru 标签直接查）
+await processJsonl('data/refetch-missing.jsonl', (r) => {
+  const m = meta.get(r.artist) || { post_count: 0, hot: 0 };
+  m.post_count = Math.max(m.post_count, r.post_count || 0);
+  meta.set(r.artist, m);
+  const tags = mergedTags.get(r.artist) || {};
+  for (const [tag, count] of Object.entries(r.tags || {})) {
+    if (count < MIN_COUNT) continue;
+    if (!isValidTag(tag)) continue;
+    tags[tag] = Math.max(tags[tag] || 0, count);
+  }
+  mergedTags.set(r.artist, tags);
+});
+console.log('第三轮补抓聚合完成');
 
 // 生成 artists-data
 const artistsData = [];

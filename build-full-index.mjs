@@ -28,6 +28,26 @@ for await (const line of rl) {
 }
 console.log(`匹配 ${matched}/${total}`);
 
+// refetch 补抓数据并入
+const REFETCH_FILES = ['data/refetch-danbooru.jsonl', 'data/refetch-gelbooru.jsonl', 'data/refetch-missing.jsonl'];
+for (const rf of REFETCH_FILES) {
+  if (!existsSync(rf)) continue;
+  const rl2 = createInterface({ input: createReadStream(rf), crlfDelay: Infinity });
+  for await (const line of rl2) {
+    if (!line.trim()) continue;
+    let d;
+    try { d = JSON.parse(line); } catch { continue; }
+    const idx = byBooru.get(d.artist);
+    if (idx === undefined) continue;
+    matched++;
+    for (const [tag, cnt] of Object.entries(d.tags || {})) {
+      if (!tag) continue;
+      let m = index.get(tag);
+      if (!m) { m = new Map(); index.set(tag, m); }
+      m.set(idx, (m.get(idx) || 0) + cnt);
+    }
+  }
+}
 const TOP_PER_TAG = 2000;
 const out = {};
 let tagsKept = 0, pairs = 0;
