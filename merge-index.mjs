@@ -8,7 +8,7 @@ const artists = JSON.parse(readFileSync('artists.json', 'utf8'));
 const booruSet = new Set(artists.map(a => a.b.toLowerCase()));
 
 const MIN_COUNT = 2;
-const TOP_N = 50;
+const TOP_N = 200;
 const MAX_TAG_LEN = 100;
 
 function isValidTag(tag) {
