@@ -93,10 +93,15 @@ def main():
     print(f'│  本地: {local[:8]}')
     print(f'│  最新: {sha[:8]}  {msg}')
     print('└──────────────────────────────────────────')
-    try:
-        ans = input('是否下载最新数据？（y/n）: ').strip().lower()
-    except EOFError:
-        ans = 'n'
+    # --auto 模式（start.bat 启动时自动更新）：有更新就直接下载，不询问
+    if '--auto' in sys.argv:
+        print('自动更新模式：发现新版本，开始自动下载...')
+        ans = 'y'
+    else:
+        try:
+            ans = input('是否下载最新数据？（y/n）: ').strip().lower()
+        except EOFError:
+            ans = 'n'
     if ans != 'y':
         print('已取消下载。')
         return
