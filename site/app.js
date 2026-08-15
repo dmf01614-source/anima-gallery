@@ -127,6 +127,10 @@ async function loadData() {
     els.loading.classList.add('hidden');
     setStatus(`已加载 ${state.artists.length.toLocaleString()} 位画师 | ${Object.keys(state.index).length.toLocaleString()} 个标签`);
     render();
+    // 首次访问自动弹出 API 配置（未填 Gelbooru key 时引导填写）
+    if (!state.settings.gbKey) {
+      setTimeout(() => els.settingsBtn.click(), 600);
+    }
   } catch (e) {
     els.loadingText.textContent = '加载失败：' + e.message;
   }
