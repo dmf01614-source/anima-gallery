@@ -358,8 +358,18 @@ async function loadThumbs(booru, container) {
     container.innerHTML = `<div class="thumbs-error">⚠ ${error.replace(/</g, '&lt;')}</div>`;
     return;
   }
+  // Danbooru 受限标签检测：帖子都没有图片地址（loli 等需 Gold+ 高级账号才能看）
+  if (posts.length > 0 && posts.every(p => !p.preview) && state.source === 'danbooru') {
+    container.innerHTML = '<div class="thumbs-error">🔒 该标签在 Danbooru 需要高级账号（Gold+）才能查看图片</div>';
+    return;
+  }
   posts.forEach((p, i) => {
     if (i >= thumbs.length) return;
+    if (!p.preview) {
+      // 个别帖子无图（受限）：格子显示锁
+      thumbs[i].innerHTML = '<span class="thumb-lock" title="该作品需 Danbooru 高级账号">🔒</span>';
+      return;
+    }
     const img = document.createElement('img');
     img.src = proxyUrl(p.preview);
     img.dataset.full = p.full;

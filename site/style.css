@@ -234,3 +234,6 @@ body:not(.online) .version-note { display: none; }
 
 /* 状态栏可点击提示（画师模式下有标签结果时） */
 .statusbar.clickable { cursor: pointer; color: var(--accent); text-decoration: underline dotted; }
+
+/* Danbooru 受限标签（需 Gold+ 高级账号）：缩略图格显示锁 */
+.thumb-lock { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; font-size: 18px; opacity: .6; background: rgba(255,255,255,.04); }
