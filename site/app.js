@@ -131,12 +131,25 @@ async function loadData() {
     if (!state.settings.gbKey) {
       setTimeout(() => els.settingsBtn.click(), 600);
     }
+    updateViewCount();
   } catch (e) {
     els.loadingText.textContent = '加载失败：' + e.message;
   }
 }
 
 function setStatus(msg) { els.statusText.textContent = msg; }
+
+// ========== 浏览量计数 ==========
+async function updateViewCount() {
+  try {
+    const r = await fetch('/api/view-count');
+    const d = await r.json();
+    if (d && d.views > 0) {
+      const el = document.getElementById('view-count');
+      if (el) el.textContent = `· 👁 ${d.views.toLocaleString()} 次访问`;
+    }
+  } catch (e) { /* 计数失败不影响使用 */ }
+}
 
 // ========== 搜索 ==========
 function searchArtist(q) {
